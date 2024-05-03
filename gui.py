@@ -8,14 +8,12 @@
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide2.QtCore import (QCoreApplication, QMetaObject, QObject, QPoint,
-    QRect, QSize, QUrl, Qt)
-from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
-    QFontDatabase, QIcon, QLinearGradient, QPalette, QPainter, QPixmap,
-    QRadialGradient)
+from PySide2.QtCore import (QCoreApplication, QMetaObject,QRect, Qt)
 from PySide2.QtWidgets import *
+from PySide2.QtGui import QIcon
 import requests
 import json
+import api_key
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -41,7 +39,7 @@ class Ui_Dialog(object):
     # setupUi
 
     def retranslateUi(self, Dialog):
-        Dialog.setWindowTitle(QCoreApplication.translate("Dialog", u"Dialog", None))
+        Dialog.setWindowTitle(QCoreApplication.translate("Dialog", u"Banking Check Info", None))
         self.pushButton.setText(QCoreApplication.translate("Dialog", u"Check", None))
         self.pushButton.clicked.connect(self.get_bank_name)
         self.label.setText(QCoreApplication.translate("Dialog", u"", None))
@@ -62,8 +60,8 @@ class Ui_Dialog(object):
             print(f"Lookup Supported: {bank['lookupSupported']}")
             print("\n")
     def get_bank_account_name(self,bank_bin, bank_code):
-        api_key_demo = "demo-2a02822e-ede3-4970-999b-18853d8e0ced"
-        client_id_demo = "demo-a34a5775-ae15-4a05-8422-1023eccbda3f"
+        api_key_demo = api_key.api_key
+        client_id_demo = api_key.client_id
         url = "https://api.vietqr.io/v2/lookup"
         headers = {
             'x-client-id': client_id_demo,
@@ -76,17 +74,22 @@ class Ui_Dialog(object):
         }
         response = requests.post(url, headers=headers, data=json.dumps(data))
         if response.status_code == 200:
-            print(response.json())
-            return response.json()['data']['accountName']
+            response_data = response.json()
+            if response_data is not None and 'data' in response_data:
+                return response_data['data']['accountName']
+            else:
+                print("Invalid response data:", response_data)
+                return None
         else:
+            print("Failed to get account name, status code:", response.status_code)
             return None
     def get_bank_bin(self,bank_name):
         bank_name = bank_name.lower()
         for bank in self.banks_list.json()['data']:
             if bank_name in bank['name'].lower():
                 return bank['bin']
-            else:
-                print(f"{bank_name} not found in {bank['name'].lower()}")
+            # else:
+            #     print(f"{bank_name} not found in {bank['name'].lower()}")
         return None
     def get_bank_name(self):
         selected_bank = self.comboBox.currentText()
@@ -108,6 +111,10 @@ if __name__ == '__main__':
     Dialog = QDialog()
     ui = Ui_Dialog()
     ui.setupUi(Dialog)
+
+    # Set the window icon
+    app.setWindowIcon(QIcon('logo.ico'))
+
     bank_names = [bank['name'] for bank in ui.banks_list.json()['data']]
     ui.comboBox.addItems(bank_names)
     Dialog.show()
