@@ -1,13 +1,5 @@
 # -*- coding: utf-8 -*-
 
-################################################################################
-## Form generated from reading UI file 'designerutinIV.ui'
-##
-## Created by: Qt User Interface Compiler version 5.14.1
-##
-## WARNING! All changes made in this file will be lost when recompiling UI file!
-################################################################################
-
 from PySide2.QtCore import (QCoreApplication, QMetaObject,QRect, Qt)
 from PySide2.QtWidgets import *
 from PySide2.QtGui import QIcon
@@ -111,10 +103,9 @@ if __name__ == '__main__':
     Dialog = QDialog()
     ui = Ui_Dialog()
     ui.setupUi(Dialog)
-
-    # Set the window icon
-    app.setWindowIcon(QIcon('logo.ico'))
-
+    # Set the window icon for gui
+    app_icon = QIcon("logo.ico")
+    app.setWindowIcon(app_icon)
     bank_names = [bank['name'] for bank in ui.banks_list.json()['data']]
     ui.comboBox.addItems(bank_names)
     Dialog.show()
